@@ -8,7 +8,9 @@ import com.example.adailson.spacex.AndGraph.AGSprite;
 
 public class CenaCreditos extends AGScene {
 
-    private AGSprite tigre = null;
+    private AGSprite infoexit = null;
+    private AGSprite infovir = null;
+    private AGSprite infoshot = null;
 
     public CenaCreditos(AGGameManager gameManager) {
         super(gameManager);
@@ -16,14 +18,19 @@ public class CenaCreditos extends AGScene {
 
     @Override
     public void init() {
-        setSceneBackgroundColor(0, 1, 0);
+        setSceneBackgroundColor(0, 0, 0);
 
-        tigre = createSprite(R.mipmap.tigre, 2, 4);
-        tigre.setScreenPercent(30, 15);
-        tigre.vrPosition.setXY(AGScreenManager.iScreenWidth / 2, AGScreenManager.iScreenHeight / 2);
-        tigre.addAnimation(30, true, 0, 7);
-        //tigre.iMirror = AGSprite.VERTICAL;
-        //tigre.fAlpha = 0.3f;
+        infoexit = createSprite(R.mipmap.infoexit, 1, 1);
+        infoexit.setScreenPercent(60, 20);
+        infoexit.vrPosition.setXY(AGScreenManager.iScreenWidth / 2, AGScreenManager.iScreenHeight/ 6);
+
+        infovir = createSprite(R.mipmap.infovir, 1, 1);
+        infovir.setScreenPercent(30, 30);
+        infovir.vrPosition.setXY(AGScreenManager.iScreenWidth / 2, AGScreenManager.iScreenHeight/ 2);
+
+        infoshot = createSprite(R.mipmap.infoshot, 1, 1);
+        infoshot.setScreenPercent(60, 20);
+        infoshot.vrPosition.setXY(AGScreenManager.iScreenWidth / 2, AGScreenManager.iScreenHeight- AGScreenManager.iScreenHeight/ 5);
     }
 
     @Override
@@ -45,6 +52,5 @@ public class CenaCreditos extends AGScene {
             vrGameManager.setCurrentScene(1);
         }
 
-        tigre.fAngle += 3;
     }
 }

@@ -25,7 +25,7 @@ public class CenaGame extends AGScene {
     private AGTimer tempExplosao = null;
     private AGSprite jogador = null;
     private AGSprite vida = null;
-    private int vidas = 3;
+    private int vidas = 0;
     private int ladoAnimacao = 0;
     private int pontuacao = 0;
     private int somShot;
@@ -40,6 +40,7 @@ public class CenaGame extends AGScene {
     @Override
     public void init() {
         setSceneBackgroundColor(0, 0, 0);
+        vidas = 3;
 
         AGSoundManager.vrMusic.loadMusic("mega.mp3", true);
         AGSoundManager.vrMusic.play();
@@ -151,7 +152,7 @@ public class CenaGame extends AGScene {
         somVida = AGSoundManager.vrSoundEffects.loadSoundEffect("stop.wav");
         somXplosion = AGSoundManager.vrSoundEffects.loadSoundEffect("xplosion.wav");
 
-        vida = createSprite(R.mipmap.vida, 3, 3);
+        vida = createSprite(R.mipmap.vidas, 3, 3);
         vida.setScreenPercent(8, 5);
         vida.vrPosition.setX(AGScreenManager.iScreenWidth - AGScreenManager.iScreenWidth / 4);
         vida.vrPosition.setY(AGScreenManager.iScreenHeight - vida.iFrameHeight / 4);
@@ -161,7 +162,6 @@ public class CenaGame extends AGScene {
         vida.addAnimation(10, false, 2, 3);
         //3
         vida.addAnimation(10, false, 4, 5);
-        vida.setCurrentAnimation(3);
     }
 
     @Override
@@ -568,13 +568,13 @@ public class CenaGame extends AGScene {
 
     private void verVida() {
         if (vidas == 3) {
-            vida.setCurrentAnimation(3);
-        }
-        if (vidas == 2) {
             vida.setCurrentAnimation(2);
         }
-        if (vidas == 1) {
+        if (vidas == 2) {
             vida.setCurrentAnimation(1);
+        }
+        if (vidas == 1) {
+            vida.setCurrentAnimation(0);
         }
     }
 }
