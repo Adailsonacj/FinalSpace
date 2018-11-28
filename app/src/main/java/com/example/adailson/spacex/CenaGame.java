@@ -4,6 +4,7 @@ import com.example.adailson.spacex.AndGraph.AGGameManager;
 import com.example.adailson.spacex.AndGraph.AGInputManager;
 import com.example.adailson.spacex.AndGraph.AGScene;
 import com.example.adailson.spacex.AndGraph.AGScreenManager;
+import com.example.adailson.spacex.AndGraph.AGSoundManager;
 import com.example.adailson.spacex.AndGraph.AGSprite;
 import com.example.adailson.spacex.AndGraph.AGTimer;
 
@@ -23,9 +24,14 @@ public class CenaGame extends AGScene {
     private AGTimer tempRevivier = null;
     private AGTimer tempExplosao = null;
     private AGSprite jogador = null;
+    private AGSprite vida = null;
     private int vidas = 3;
     private int ladoAnimacao = 0;
     private int pontuacao = 0;
+    private int somShot;
+    private int somVida;
+    private int somXplosion;
+
 
     public CenaGame(AGGameManager gameManager) {
         super(gameManager);
@@ -34,6 +40,10 @@ public class CenaGame extends AGScene {
     @Override
     public void init() {
         setSceneBackgroundColor(0, 0, 0);
+
+        AGSoundManager.vrMusic.loadMusic("mega.mp3", true);
+        AGSoundManager.vrMusic.play();
+
         vetBullets = new ArrayList<AGSprite>();
 
         //Instancia o array de navios e configura seus tamanhos e direcoes
@@ -69,16 +79,31 @@ public class CenaGame extends AGScene {
             for (int i = 0; i < vetInimigos.length; i++) {
 
             }
-            if (vetInimigos[iIndex].vrPosition.fX != numero && vetInimigos[iIndex].vrPosition.fY != AGScreenManager.iScreenHeight + numero) {
-                vetInimigos[iIndex].setScreenPercent(16, 10);
-                vetInimigos[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight + numero);
+            //if (iIndex == 0) {
+            vetInimigos[iIndex].setScreenPercent(16, 10);
+            vetInimigos[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight + numero);
+            //}
+            /*
+            else {
+
+                if (AGScreenManager.iScreenHeight + numero > vetInimigos[iIndex - 1].vrPosition.getY() + vetInimigos[iIndex - 1].iFrameHeight && AGScreenManager.iScreenHeight + numero < vetInimigos[iIndex - 1].vrPosition.getY() - vetInimigos[iIndex - 1].iFrameHeight) {
+                    if (numero > vetInimigos[iIndex - 1].vrPosition.getX() + vetInimigos[iIndex - 1].iFrameWidth && numero < vetInimigos[iIndex - 1].vrPosition.getX() - vetInimigos[iIndex - 1].iFrameWidth) {
+                        vetInimigos[iIndex].setScreenPercent(16, 10);
+                        vetInimigos[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight + numero);
+                    }
+                }
             }
+            */
             //parada
             vetInimigos[iIndex].addAnimation(10, false, 0, 1);
             vetInimigos[iIndex].setCurrentAnimation(0);
             vetInimigos[iIndex].iMirror = AGSprite.VERTICAL;
         }
-        for (int iIndex = 0; iIndex < vetInimigos2.length; iIndex++) {
+        for (
+                int iIndex = 0;
+                iIndex < vetInimigos2.length; iIndex++)
+
+        {
             Random r = new Random();
 
             int numero1 = r.nextInt(AGScreenManager.iScreenWidth);
@@ -93,6 +118,7 @@ public class CenaGame extends AGScene {
             vetInimigos2[iIndex].setCurrentAnimation(0);
             vetInimigos2[iIndex].iMirror = AGSprite.VERTICAL;
         }
+
         vetInimigos[0].vrDirection.fY = -1;
         vetInimigos[1].vrDirection.fY = -1;
         vetInimigos[2].vrDirection.fY = -1;
@@ -110,11 +136,32 @@ public class CenaGame extends AGScene {
         //Nave direita
         jogador.addAnimation(10, false, 4, 6);
 
-        tempRevivier = new AGTimer(1000);
-        tempExplosao = new AGTimer(500);
+        tempRevivier = new
+
+                AGTimer(1000);
+
+        tempExplosao = new
+
+                AGTimer(500);
 
         vetExplosions = new ArrayList<AGSprite>();
         vetExplosions2 = new ArrayList<AGSprite>();
+
+        somShot = AGSoundManager.vrSoundEffects.loadSoundEffect("shot.wav");
+        somVida = AGSoundManager.vrSoundEffects.loadSoundEffect("stop.wav");
+        somXplosion = AGSoundManager.vrSoundEffects.loadSoundEffect("xplosion.wav");
+
+        vida = createSprite(R.mipmap.vida, 3, 3);
+        vida.setScreenPercent(8, 5);
+        vida.vrPosition.setX(AGScreenManager.iScreenWidth - AGScreenManager.iScreenWidth / 4);
+        vida.vrPosition.setY(AGScreenManager.iScreenHeight - vida.iFrameHeight / 4);
+        //1
+        vida.addAnimation(10, true, 0, 1);
+        //2
+        vida.addAnimation(10, false, 2, 3);
+        //3
+        vida.addAnimation(10, false, 4, 5);
+        vida.setCurrentAnimation(3);
     }
 
     @Override
@@ -150,6 +197,7 @@ public class CenaGame extends AGScene {
         updateMeteoro();
         xDasBolas();
         setAnimacao();
+        verVida();
 
         shot();
         coliInimigoJogador();
@@ -255,6 +303,7 @@ public class CenaGame extends AGScene {
         if (jogador.bVisible) {
             //Se a tela foi clicada efetua um novo tiro
             if (AGInputManager.vrTouchEvents.screenClicked()) {
+                AGSoundManager.vrSoundEffects.play(somShot);
 
                 AGSprite newBullet = null;
 
@@ -270,14 +319,13 @@ public class CenaGame extends AGScene {
 
                 //Cria uma nova bala
                 if (newBullet == null) {
-                    newBullet = createSprite(R.mipmap.bala, 1, 1);
+                    newBullet = createSprite(R.mipmap.shot, 1, 1);
                     newBullet.setScreenPercent(1, 4);
                     vetBullets.add(newBullet);
                 }
 
-                //Configura a bala com a posicao do canhao
                 newBullet.vrPosition.setX(jogador.vrPosition.getX());
-                newBullet.vrPosition.setY(jogador.vrPosition.getY());
+                newBullet.vrPosition.setY(jogador.vrPosition.getY() + jogador.iFrameHeight / 4);
             }
         }
     }
@@ -403,6 +451,7 @@ public class CenaGame extends AGScene {
         //Verifica se e possivel reciclar uma explosao
         for (AGSprite explosion : vetExplosions) {
             if (!explosion.bVisible) {
+                AGSoundManager.vrSoundEffects.play(somXplosion);
                 explosion.vrPosition.setXY(posX, posY);
                 explosion.restartAnimation();
                 explosion.bVisible = true;
@@ -424,6 +473,7 @@ public class CenaGame extends AGScene {
         //Verifica se e possivel reciclar uma explosao
         for (AGSprite explosion : vetExplosions2) {
             if (!explosion.bVisible) {
+                AGSoundManager.vrSoundEffects.play(somXplosion);
                 explosion.vrPosition.setXY(posX, posY);
                 explosion.restartAnimation();
                 explosion.bVisible = true;
@@ -461,6 +511,7 @@ public class CenaGame extends AGScene {
     private void coliInimigoJogador() {
         for (AGSprite inimigo : vetInimigos) {
             if (inimigo.bVisible && inimigo.collide(jogador)) {
+                AGSoundManager.vrSoundEffects.play(somVida);
                 jogador.bVisible = false;
                 tempRevivier.update();
                 vidas--;
@@ -471,6 +522,7 @@ public class CenaGame extends AGScene {
     private void coliInimigo2Jogador() {
         for (AGSprite inimigo : vetInimigos2) {
             if (inimigo.bVisible && inimigo.collide(jogador)) {
+                AGSoundManager.vrSoundEffects.play(somVida);
                 jogador.bVisible = false;
                 tempRevivier.update();
                 vidas--;
@@ -481,6 +533,7 @@ public class CenaGame extends AGScene {
     private void coliMeteoroJogador() {
         for (AGSprite inimigo : vetMeteoro) {
             if (inimigo.bVisible && inimigo.collide(jogador)) {
+                AGSoundManager.vrSoundEffects.play(somVida);
                 jogador.bVisible = false;
                 tempRevivier.update();
                 vidas--;
@@ -502,6 +555,7 @@ public class CenaGame extends AGScene {
         if (vidas == 0 && !jogador.bVisible) {
 
             CenaGameOver.score = pontuacao;
+            AGSoundManager.vrMusic.stop();
             vrGameManager.setCurrentScene(4);
             pontuacao = 0;
             vidas = 3;
@@ -510,5 +564,17 @@ public class CenaGame extends AGScene {
 
     private void setAnimacao() {
         jogador.setCurrentAnimation(ladoAnimacao);
+    }
+
+    private void verVida() {
+        if (vidas == 3) {
+            vida.setCurrentAnimation(3);
+        }
+        if (vidas == 2) {
+            vida.setCurrentAnimation(2);
+        }
+        if (vidas == 1) {
+            vida.setCurrentAnimation(1);
+        }
     }
 }

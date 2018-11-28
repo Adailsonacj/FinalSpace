@@ -41,7 +41,7 @@ public class CenaMenu extends AGScene {
         sair.vrPosition.setXY(AGScreenManager.iScreenWidth / 4, AGScreenManager.iScreenHeight / 2 - 450);
         setSceneBackgroundColor(0, 0, 0);
 
-        AGSoundManager.vrMusic.loadMusic("musica.mp3", true);
+        AGSoundManager.vrMusic.loadMusic("dupstep.mp3", true);
         AGSoundManager.vrMusic.play();
 
         codSom = AGSoundManager.vrSoundEffects.loadSoundEffect("toc.wav");

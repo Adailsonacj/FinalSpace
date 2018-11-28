@@ -15,6 +15,7 @@ public class CenaGameOver extends AGScene {
     private int codSom;
     private AGSprite[] vetScore = null;
     public static int score = 0;
+    private int lose;
 
     public CenaGameOver(AGGameManager pManager) {
         super(pManager);
@@ -40,13 +41,15 @@ public class CenaGameOver extends AGScene {
         for (int iIndex = vetScore.length - 1; iIndex >= 0; iIndex--) {
             vetScore[iIndex] = createSprite(R.mipmap.placar, 4, 4);
             vetScore[iIndex].setScreenPercent(8, 8);
-            vetScore[iIndex].vrPosition.setXY(AGScreenManager.iScreenWidth/4*3 - iIndex * vetScore[iIndex].getSpriteWidth() - 10, AGScreenManager.iScreenHeight - vetScore[iIndex].getSpriteHeight() / 2);
+            vetScore[iIndex].vrPosition.setXY(AGScreenManager.iScreenWidth / 4 * 3 - iIndex * vetScore[iIndex].getSpriteWidth() - 10, AGScreenManager.iScreenHeight - vetScore[iIndex].getSpriteHeight() / 2);
             vetScore[iIndex].bAutoRender = false;
 
             for (int jIndex = 0; jIndex < 10; jIndex++) {
                 vetScore[iIndex].addAnimation(1, false, jIndex);
             }
         }
+        lose = AGSoundManager.vrSoundEffects.loadSoundEffect("lose.wav");
+        AGSoundManager.vrSoundEffects.play(lose);
     }
 
     @Override
