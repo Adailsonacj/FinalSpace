@@ -16,13 +16,16 @@ public class CenaGame extends AGScene {
     private AGSprite[] vetInimigos = null;
     private AGSprite[] vetInimigos2 = null;
     private AGSprite[] vetIestrela = null;
+    private AGSprite[] vetMeteoro = null;
+    private ArrayList<AGSprite> vetExplosions = null;
+    private ArrayList<AGSprite> vetExplosions2 = null;
     private ArrayList<AGSprite> vetBullets = null;
     private AGTimer tempRevivier = null;
-
+    private AGTimer tempExplosao = null;
     private AGSprite jogador = null;
     private int vidas = 3;
     private int ladoAnimacao = 0;
-
+    private int pontuacao = 0;
 
     public CenaGame(AGGameManager gameManager) {
         super(gameManager);
@@ -33,11 +36,23 @@ public class CenaGame extends AGScene {
         setSceneBackgroundColor(0, 0, 0);
         vetBullets = new ArrayList<AGSprite>();
 
-
         //Instancia o array de navios e configura seus tamanhos e direcoes
         vetInimigos = new AGSprite[3];
-        vetInimigos2 = new AGSprite[3];
+        vetInimigos2 = new AGSprite[1];
         vetIestrela = new AGSprite[20];
+        vetMeteoro = new AGSprite[4];
+
+        for (int iIndex = 0; iIndex < vetMeteoro.length; iIndex++) {
+            Random r = new Random();
+            int numero = r.nextInt(AGScreenManager.iScreenWidth);
+            vetMeteoro[iIndex] = createSprite(R.mipmap.meteoro, 4, 1);
+            vetMeteoro[iIndex].setScreenPercent(16, 10);
+            vetMeteoro[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight + numero);
+            vetMeteoro[iIndex].vrDirection.fY = -1;
+            vetMeteoro[iIndex].addAnimation(10, true, 0, 3);
+            vetMeteoro[iIndex].setCurrentAnimation(0);
+        }
+
         for (int iIndex = 0; iIndex < vetIestrela.length; iIndex++) {
             Random r = new Random();
             int numero = r.nextInt(AGScreenManager.iScreenWidth);
@@ -51,23 +66,30 @@ public class CenaGame extends AGScene {
             Random r = new Random();
             int numero = r.nextInt(AGScreenManager.iScreenWidth);
             vetInimigos[iIndex] = createSprite(R.mipmap.inimigo, 5, 1);
-            vetInimigos[iIndex].setScreenPercent(16, 10);
-            vetInimigos[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight);
-            //Nave esquerda
+            for (int i = 0; i < vetInimigos.length; i++) {
+
+            }
+            if (vetInimigos[iIndex].vrPosition.fX != numero && vetInimigos[iIndex].vrPosition.fY != AGScreenManager.iScreenHeight + numero) {
+                vetInimigos[iIndex].setScreenPercent(16, 10);
+                vetInimigos[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight + numero);
+            }
+            //parada
             vetInimigos[iIndex].addAnimation(10, false, 0, 1);
-            //Nave explodindo
-            vetInimigos[iIndex].addAnimation(10, false, 2, 4);
             vetInimigos[iIndex].setCurrentAnimation(0);
             vetInimigos[iIndex].iMirror = AGSprite.VERTICAL;
+        }
+        for (int iIndex = 0; iIndex < vetInimigos2.length; iIndex++) {
+            Random r = new Random();
 
+            int numero1 = r.nextInt(AGScreenManager.iScreenWidth);
 
             vetInimigos2[iIndex] = createSprite(R.mipmap.inimigo2, 5, 1);
             vetInimigos2[iIndex].setScreenPercent(16, 10);
-            vetInimigos2[iIndex].vrPosition.setXY(numero, AGScreenManager.iScreenHeight);
-            //Nave esquerda
+            vetInimigos2[iIndex].vrPosition.setXY(numero1, AGScreenManager.iScreenHeight + numero1);
+            //parada
             vetInimigos2[iIndex].addAnimation(10, false, 0, 1);
             //Nave explodindo
-            vetInimigos2[iIndex].addAnimation(10, false, 2, 4);
+            vetInimigos2[iIndex].addAnimation(10, true, 2, 4);
             vetInimigos2[iIndex].setCurrentAnimation(0);
             vetInimigos2[iIndex].iMirror = AGSprite.VERTICAL;
         }
@@ -76,27 +98,6 @@ public class CenaGame extends AGScene {
         vetInimigos[2].vrDirection.fY = -1;
 
         vetInimigos2[0].vrDirection.fY = -1;
-        vetInimigos2[1].vrDirection.fY = -1;
-        vetInimigos2[2].vrDirection.fY = -1;
-
-        /*
-        vetInimigos[3].vrDirection.fY = -1;
-        vetInimigos[4].vrDirection.fY = -1;
-        vetInimigos[5].vrDirection.fY = -1;
-        vetInimigos[6].vrDirection.fY = -1;
-        vetInimigos[7].vrDirection.fY = -1;
-        vetInimigos[8].vrDirection.fY = -1;
-        vetInimigos[9].vrDirection.fY = -1;
-
-        /*
-        vetInimigos[0].vrDirection.fX = 0;
-        vetInimigos[1].vrDirection.fX = 0;
-        vetInimigos[2].vrDirection.fX = 0;
-        vetInimigos[4].vrDirection.fX = 0;
-        vetInimigos[5].vrDirection.fX = 0;
-        vetInimigos[5].vrDirection.fX = 0;
-        vetInimigos[6].vrDirection.fX = 0;
-*/
 
         jogador = createSprite(R.mipmap.jogador, 4, 3);
         jogador.setScreenPercent(16, 10);
@@ -109,10 +110,11 @@ public class CenaGame extends AGScene {
         //Nave direita
         jogador.addAnimation(10, false, 4, 6);
 
-
         tempRevivier = new AGTimer(1000);
+        tempExplosao = new AGTimer(500);
 
-
+        vetExplosions = new ArrayList<AGSprite>();
+        vetExplosions2 = new ArrayList<AGSprite>();
     }
 
     @Override
@@ -135,20 +137,27 @@ public class CenaGame extends AGScene {
                 animacao = 0;
             }
             gato.setCurrentAnimation(animacao);
-            return;
+            voltar;
         }
         */
 
-        handleCannon();
+        moveJogador();
         updateInimigos();
+        updateExplosions();
+        updateExplosions2();
         updateInimigos2();
         updateEstrela();
+        updateMeteoro();
         xDasBolas();
         setAnimacao();
 
         shot();
         coliInimigoJogador();
-        coliTiroInimigo();
+        coliInimigo2Jogador();
+        coliMeteoroJogador();
+        inimigo1Atingido();
+        inimigo2Atingido();
+        meteoroAtingido();
         updateBalas();
         reviveInimigo();
         stopPartita();
@@ -159,6 +168,8 @@ public class CenaGame extends AGScene {
     private void voltar() {
         if (AGInputManager.vrTouchEvents.backButtonClicked()) {
             vrGameManager.setCurrentScene(1);
+            vidas = 3;
+            pontuacao = 0;
         }
     }
 
@@ -205,6 +216,20 @@ public class CenaGame extends AGScene {
                 int numero = r.nextInt(AGScreenManager.iScreenWidth);
                 estrela.vrPosition.fX = numero;
                 estrela.vrPosition.fY = AGScreenManager.iScreenHeight + numero;
+            }
+        }
+    }
+
+    private void updateMeteoro() {
+        for (AGSprite meteoro : vetMeteoro) {
+            meteoro.vrPosition.setY(meteoro.vrPosition.fY + meteoro.vrDirection.fY * 10);
+
+            if (meteoro.vrPosition.fY < 0) {
+                Random r = new Random();
+                meteoro.bRecycled = true;
+                int numero = r.nextInt(AGScreenManager.iScreenWidth);
+                meteoro.vrPosition.fX = numero;
+                meteoro.vrPosition.fY = AGScreenManager.iScreenHeight + numero;
             }
         }
     }
@@ -270,20 +295,20 @@ public class CenaGame extends AGScene {
         }
     }
 
-    private void handleCannon() {
-        if (AGInputManager.vrAccelerometer.getAccelX() < 0.50f && AGInputManager.vrAccelerometer.getAccelX() > -0.50f) {
+    private void moveJogador() {
+        if (AGInputManager.vrAccelerometer.getAccelX() < 1 && AGInputManager.vrAccelerometer.getAccelX() > -0.50f) {
             ladoAnimacao = 0;
         }
-        if (AGInputManager.vrAccelerometer.getAccelX() > 0.50f) {
+        if (AGInputManager.vrAccelerometer.getAccelX() > 1) {
             ladoAnimacao = 2;
             jogador.vrPosition.setX(jogador.vrPosition.getX() + 8.0f);
         } else if (AGInputManager.vrAccelerometer.getAccelX() < -0.50f) {
             ladoAnimacao = 1;
             jogador.vrPosition.setX(jogador.vrPosition.getX() - 8.0f);
         }
-        if (AGInputManager.vrAccelerometer.getAccelY() > 0.50f) {
+        if (AGInputManager.vrAccelerometer.getAccelY() > 1) {
             jogador.vrPosition.setY(jogador.vrPosition.getY() + 8.0f);
-        } else if (AGInputManager.vrAccelerometer.getAccelY() < 0.50f) {
+        } else if (AGInputManager.vrAccelerometer.getAccelY() < 1) {
             jogador.vrPosition.setY(jogador.vrPosition.getY() - 8.0f);
         }
 
@@ -303,13 +328,30 @@ public class CenaGame extends AGScene {
         }
     }
 
-    private void coliTiroInimigo() {
+    private void meteoroAtingido() {
         for (AGSprite balas : vetBullets) {
-            for (AGSprite inimigos : vetInimigos) {
-                if (balas.bVisible && balas.collide(inimigos)) {
+            for (AGSprite pedra : vetMeteoro) {
+                if (balas.bVisible && balas.collide(pedra)) {
+
                     balas.bVisible = false;
                     balas.bRecycled = true;
 
+                    break;
+                }
+            }
+        }
+    }
+
+    private void inimigo1Atingido() {
+        for (AGSprite balas : vetBullets) {
+            for (AGSprite inimigos : vetInimigos) {
+                if (balas.bVisible && balas.collide(inimigos)) {
+                    pontuacao += 1;
+
+                    balas.bVisible = false;
+                    balas.bRecycled = true;
+                    createExplosion(inimigos.vrPosition.getX(), inimigos.vrPosition.getY());
+                    inimigos.setCurrentAnimation(0);
                     if (inimigos.vrDirection.fY == 1) {
                         inimigos.vrDirection.fY = -1;
                         inimigos.vrPosition.fY = AGScreenManager.iScreenHeight + inimigos.getSpriteHeight() / 2;
@@ -328,17 +370,121 @@ public class CenaGame extends AGScene {
         }
     }
 
+    private void inimigo2Atingido() {
+        for (AGSprite balas : vetBullets) {
+            for (AGSprite inimigos : vetInimigos2) {
+                if (balas.bVisible && balas.collide(inimigos)) {
+                    pontuacao += 5;
+
+                    balas.bVisible = false;
+                    balas.bRecycled = true;
+                    createExplosion2(inimigos.vrPosition.getX(), inimigos.vrPosition.getY());
+                    inimigos.setCurrentAnimation(0);
+                    if (inimigos.vrDirection.fY == 1) {
+                        inimigos.vrDirection.fY = -1;
+                        inimigos.vrPosition.fY = AGScreenManager.iScreenHeight + inimigos.getSpriteHeight() / 2;
+                    } else {
+                        inimigos.vrDirection.fY = -1;
+                        inimigos.vrPosition.fY = AGScreenManager.iScreenHeight;
+                        Random r = new Random();
+                        int numero = r.nextInt(AGScreenManager.iScreenWidth);
+                        inimigos.vrPosition.fX = numero;
+
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    //Metodo utilizado para criar uma explosao no lugar da colisao entre bala e navio
+    private void createExplosion(float posX, float posY) {
+        //Verifica se e possivel reciclar uma explosao
+        for (AGSprite explosion : vetExplosions) {
+            if (!explosion.bVisible) {
+                explosion.vrPosition.setXY(posX, posY);
+                explosion.restartAnimation();
+                explosion.bVisible = true;
+                return;
+            }
+        }
+
+        AGSprite newExplosion = createSprite(R.mipmap.inimigo, 5, 1);
+        newExplosion.setScreenPercent(16, 10);
+        newExplosion.iMirror = AGSprite.VERTICAL;
+        newExplosion.addAnimation(20, false, 2, 4);
+        newExplosion.setCurrentAnimation(0);
+        newExplosion.vrPosition.setXY(posX, posY);
+        vetExplosions.add(newExplosion);
+    }
+
+    private void createExplosion2(float posX, float posY) {
+        //Verifica se e possivel reciclar uma explosao
+        //Verifica se e possivel reciclar uma explosao
+        for (AGSprite explosion : vetExplosions2) {
+            if (!explosion.bVisible) {
+                explosion.vrPosition.setXY(posX, posY);
+                explosion.restartAnimation();
+                explosion.bVisible = true;
+                return;
+            }
+        }
+
+        AGSprite newExplosion = createSprite(R.mipmap.inimigo2, 5, 1);
+        newExplosion.setScreenPercent(16, 10);
+        newExplosion.iMirror = AGSprite.VERTICAL;
+        newExplosion.addAnimation(20, false, 2, 4);
+        newExplosion.setCurrentAnimation(0);
+        newExplosion.vrPosition.setXY(posX, posY);
+        vetExplosions2.add(newExplosion);
+    }
+
+    //Metodo utilizado para atualizar o estado das explosoes
+    private void updateExplosions() {
+        for (AGSprite explosion : vetExplosions) {
+            if (explosion.bVisible && explosion.getCurrentAnimation().isAnimationEnded()) {
+                explosion.bVisible = false;
+            }
+        }
+    }
+
+    //Metodo utilizado para atualizar o estado das explosoes
+    private void updateExplosions2() {
+        for (AGSprite explosion : vetExplosions2) {
+            if (explosion.bVisible && explosion.getCurrentAnimation().isAnimationEnded()) {
+                explosion.bVisible = false;
+            }
+        }
+    }
+
     private void coliInimigoJogador() {
         for (AGSprite inimigo : vetInimigos) {
             if (inimigo.bVisible && inimigo.collide(jogador)) {
                 jogador.bVisible = false;
                 tempRevivier.update();
                 vidas--;
-
-
             }
+        }
+    }
 
+    private void coliInimigo2Jogador() {
+        for (AGSprite inimigo : vetInimigos2) {
+            if (inimigo.bVisible && inimigo.collide(jogador)) {
+                jogador.bVisible = false;
+                tempRevivier.update();
+                vidas--;
+            }
+        }
+    }
 
+    private void coliMeteoroJogador() {
+        for (AGSprite inimigo : vetMeteoro) {
+            if (inimigo.bVisible && inimigo.collide(jogador)) {
+                jogador.bVisible = false;
+                tempRevivier.update();
+                vidas--;
+            }
         }
     }
 
@@ -354,9 +500,11 @@ public class CenaGame extends AGScene {
 
     private void stopPartita() {
         if (vidas == 0 && !jogador.bVisible) {
-            vidas = 3;
-            vrGameManager.setCurrentScene(1);
 
+            CenaGameOver.score = pontuacao;
+            vrGameManager.setCurrentScene(4);
+            pontuacao = 0;
+            vidas = 3;
         }
     }
 

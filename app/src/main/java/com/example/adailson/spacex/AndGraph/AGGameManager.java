@@ -81,7 +81,7 @@ public class AGGameManager implements Renderer
 	******************************************/
 	private void init(GL10 pOpenGL, int pWidth, int pHeight)
 	{	
-		//If size still same return
+		//If size still same voltar
 		if (AGScreenManager.iScreenWidth == pWidth && AGScreenManager.iScreenHeight == pHeight)
 			return;
 		
